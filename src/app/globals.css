@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+
+  --color-paper: #f6f4ef;
+  --color-surface: #ffffff;
+  --color-ink: #17191e;
+  --color-ink-2: #474c55;
+  --color-muted: #8a8f98;
+  --color-line: #e8e4db;
+  --color-line-2: #f0ede6;
+
+  --color-accent: #4f55d8;
+  --color-accent-soft: #eceefd;
+  --color-coral: #ef7b5b;
+
+  /* Lanes from the components map */
+  --color-lane-founder: #ecebfb;
+  --color-lane-system: #fbf3dc;
+  --color-lane-ai: #e2f3ec;
+  --color-lane-email: #fbe8ea;
+
+  --color-advance: #1e7a4f;
+  --color-advance-soft: #e3f3ea;
+  --color-hold: #a3660f;
+  --color-hold-soft: #fbf0da;
+  --color-pass: #b23b52;
+  --color-pass-soft: #fbe7eb;
+  --color-flag: #6645c4;
+  --color-flag-soft: #eee9fb;
+}
+
+html {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background:
+    radial-gradient(1200px 500px at 85% -10%, #eceefd 0%, transparent 60%),
+    radial-gradient(900px 420px at -10% 10%, #fdeee6 0%, transparent 55%),
+    var(--color-paper);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 20px;
+  box-shadow: 0 1px 2px rgb(23 25 30 / 0.04), 0 8px 24px -12px rgb(23 25 30 / 0.08);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  padding: 0.55rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.5; pointer-events: none; }
+.btn-primary { background: var(--color-ink); color: white; }
+.btn-primary:hover { background: #2a2d35; box-shadow: 0 6px 18px -8px rgb(23 25 30 / 0.5); }
+.btn-accent { background: var(--color-accent); color: white; }
+.btn-accent:hover { background: #4148c9; box-shadow: 0 6px 18px -8px rgb(79 85 216 / 0.7); }
+.btn-ghost { background: transparent; color: var(--color-ink-2); border: 1px solid var(--color-line); }
+.btn-ghost:hover { background: white; color: var(--color-ink); }
+
+.focus-ring:focus-visible, .btn:focus-visible, button:focus-visible, textarea:focus-visible, input:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.scroll-thin { scrollbar-width: thin; scrollbar-color: #d9d4c8 transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
