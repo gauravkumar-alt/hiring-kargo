@@ -79,6 +79,8 @@ export interface Candidate {
   brief?: Brief;
   email?: EmailDraft;
   override?: Exclude<Decision, "FLAG">; // founder's final call
+  note?: string; // founder's reason for the call
+  reviewedAt?: number; // when the founder made a call in triage
   sentAt?: number;
   sentKind?: EmailKind;
   sample?: boolean;

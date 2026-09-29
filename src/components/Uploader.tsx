@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { ROLES, ROLE_LABEL, type Role } from "@/lib/rubric";
 import { gsap, useGSAP } from "./gsap";
-import { Icon } from "./ui";
+import { Icon, Magnetic } from "./ui";
 
 interface Staged {
   key: string;
@@ -48,6 +48,32 @@ export function Uploader({ onSubmit, aiReady }: { onSubmit: (items: { file: File
   const input = useRef<HTMLInputElement>(null);
   const root = useRef<HTMLDivElement>(null);
   const prevCount = useRef(0);
+
+  useGSAP(
+    () => {
+      const zone = root.current!.querySelector<HTMLElement>(".dropzone");
+      if (!zone || !window.matchMedia("(pointer: fine)").matches) return;
+      const mx = gsap.quickTo(zone, "--mx", { duration: 0.45, ease: "power3.out" });
+      const my = gsap.quickTo(zone, "--my", { duration: 0.45, ease: "power3.out" });
+      const move = (e: MouseEvent) => {
+        const b = zone.getBoundingClientRect();
+        mx(e.clientX - b.left);
+        my(e.clientY - b.top);
+      };
+      // Spotlight fades in on hover and out on leave, rather than sitting in a corner.
+      const enter = () => gsap.to(zone, { "--ma": 1, duration: 0.3 });
+      const leave = () => gsap.to(zone, { "--ma": 0, duration: 0.4 });
+      zone.addEventListener("mousemove", move);
+      zone.addEventListener("mouseenter", enter);
+      zone.addEventListener("mouseleave", leave);
+      return () => {
+        zone.removeEventListener("mousemove", move);
+        zone.removeEventListener("mouseenter", enter);
+        zone.removeEventListener("mouseleave", leave);
+      };
+    },
+    { scope: root }
+  );
 
   useGSAP(
     () => {
@@ -109,7 +135,8 @@ export function Uploader({ onSubmit, aiReady }: { onSubmit: (items: { file: File
           setOver(false);
           add(e.dataTransfer.files);
         }}
-        className={`group relative flex w-full flex-col items-center justify-center gap-2 overflow-hidden rounded-2xl border-2 border-dashed px-6 py-9 text-center transition-all ${
+        style={{ ["--mx" as string]: 0, ["--my" as string]: 0, ["--ma" as string]: 0, backgroundImage: "radial-gradient(260px circle at calc(var(--mx) * 1px) calc(var(--my) * 1px), rgba(79,85,216,calc(0.16 * var(--ma))), transparent 70%)" }}
+        className={`dropzone group relative flex w-full flex-col items-center justify-center gap-2 overflow-hidden rounded-2xl border-2 border-dashed px-6 py-9 text-center transition-all ${
           over ? "border-accent bg-accent-soft" : "border-line bg-lane-founder/40 hover:border-accent/50 hover:bg-lane-founder/70"
         }`}
       >
@@ -144,10 +171,12 @@ export function Uploader({ onSubmit, aiReady }: { onSubmit: (items: { file: File
             <span className="text-xs text-muted">
               {staged.filter((s) => s.role === "PM").length} PM · {staged.filter((s) => s.role === "SPM").length} SPM
             </span>
-            <button type="button" className="btn btn-accent" onClick={submit} disabled={!aiReady} title={aiReady ? "" : "Add GEMINI_API_KEY to enable scoring"}>
-              <Icon name="sparkle" />
-              Screen {staged.length} CV{staged.length > 1 ? "s" : ""}
-            </button>
+            <Magnetic>
+              <button type="button" className="btn btn-accent" onClick={submit} disabled={!aiReady} title={aiReady ? "" : "Add GEMINI_API_KEY to enable scoring"}>
+                <Icon name="sparkle" />
+                Screen {staged.length} CV{staged.length > 1 ? "s" : ""}
+              </button>
+            </Magnetic>
           </div>
         </>
       )}
