@@ -178,7 +178,13 @@ export function useCandidates() {
         patch(id, { brief, email, stage: "done" });
         files.current.delete(id);
       } catch (e) {
-        patch(id, { stage: "error", error: e instanceof Error ? e.message : "Something went wrong" });
+        const message = e instanceof Error ? e.message : "Something went wrong";
+        patch(id, { stage: "error", error: message });
+        if (message.startsWith("Gemini's daily limit")) {
+          // No point sending the rest of the queue into the same wall. Retry picks them up later.
+          const paused = queue.current.splice(0);
+          setCandidates((cs) => cs.map((c) => (paused.includes(c.id) ? { ...c, stage: "error", error: message } : c)));
+        }
       }
     },
     [patch]
