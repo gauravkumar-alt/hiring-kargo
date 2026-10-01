@@ -91,7 +91,7 @@ export function Pipeline({ items, onRetry, onRemove }: { items: Candidate[]; onR
     <section className="card p-5 sm:p-6">
       <div className="mb-3 flex items-baseline justify-between">
         <h2 className="text-lg font-bold tracking-tight">In progress</h2>
-        <span className="text-sm text-muted">{active ? `${active} screening · 2 at a time` : "Needs attention"}</span>
+        <span className="text-sm text-muted">{active ? `${active} screening` : "Needs attention"}</span>
       </div>
       <ul className="scroll-thin max-h-[420px] space-y-2 overflow-y-auto pr-1">
         {items.map((c) => (

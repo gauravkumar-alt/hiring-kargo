@@ -32,7 +32,7 @@ const criterionSchema = {
   type: "OBJECT",
   properties: {
     evidence: { type: "STRING", description: "Verbatim quote from the CV, under 15 words. Empty string if nothing supports a score above 1." },
-    rationale: { type: "STRING", description: "One sentence: which anchor this matches and why." },
+    rationale: { type: "STRING", description: "One plain sentence on why this score fits the CV. Don't mention anchors or score numbers." },
     score: { type: "INTEGER", description: "1-5" },
   },
   required: ["evidence", "rationale", "score"],

@@ -146,7 +146,7 @@ export function Uploader({ onSubmit, aiReady }: { onSubmit: (items: { file: File
           <Icon name="upload" className="h-5 w-5" />
         </span>
         <span className="text-sm font-semibold">Drop CVs here, or click to browse</span>
-        <span className="text-xs text-muted">Names, contact details and education are removed before AI reads anything</span>
+        <span className="text-xs text-muted">Personal details are removed before the AI reads anything</span>
         <input ref={input} type="file" accept={ACCEPT} multiple hidden onChange={(e) => (add(e.target.files), (e.target.value = ""))} />
       </button>
 
@@ -174,7 +174,7 @@ export function Uploader({ onSubmit, aiReady }: { onSubmit: (items: { file: File
               {staged.filter((s) => s.role === "PM").length} PM · {staged.filter((s) => s.role === "SPM").length} SPM
             </span>
             <Magnetic>
-              <button type="button" className="btn btn-accent" onClick={submit} disabled={!aiReady} title={aiReady ? "" : "Add GEMINI_API_KEY to enable scoring"}>
+              <button type="button" className="btn btn-accent" onClick={submit} disabled={!aiReady} title={aiReady ? "" : "AI scoring isn't connected right now"}>
                 <Icon name="sparkle" />
                 Screen {staged.length} CV{staged.length > 1 ? "s" : ""}
               </button>

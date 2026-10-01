@@ -30,7 +30,7 @@ function parse429(body: string) {
 /** Call Gemini with a JSON response schema. Retries brief overloads; stops at once on a daily quota. */
 export async function generateJson<T>(prompt: string, schema: object, temperature = 0.2): Promise<T> {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("GEMINI_API_KEY is not set. Add it to .env.local (see .env.example).");
+  if (!apiKey) throw new Error("AI scoring isn't connected right now.");
 
   let lastError = "";
   for (let attempt = 0; attempt <= OVERLOAD_WAITS_MS.length; attempt++) {

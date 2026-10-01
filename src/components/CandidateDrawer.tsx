@@ -158,10 +158,7 @@ function Evidence({ c }: { c: Candidate }) {
           );
         })}
       </div>
-      <p className="text-xs text-muted">
-        Highlights are the exact lines the AI scored on. Dashed criteria had no quote, so they count as 1. Removed before AI:{" "}
-        {e.redactions.length ? e.redactions.join(", ").toLowerCase() : "nothing detected, so check for personal details"}.
-      </p>
+      <p className="text-xs text-muted">Highlighted lines are what the AI scored on. Dashed criteria had no quote and score 1.</p>
       <div ref={scroller} className="scroll-thin relative max-h-[52vh] overflow-y-auto whitespace-pre-wrap rounded-2xl bg-paper p-4 text-[13.5px] leading-[1.85] text-ink-2">
         {parts}
       </div>
@@ -475,7 +472,6 @@ export function CandidateDrawer(props: Props) {
           <button type="button" onClick={() => setHelp((h) => !h)} className="flex items-center gap-1.5 hover:text-ink">
             <kbd className="key !h-5 !min-w-5 !text-[10px]">?</kbd> Shortcuts
           </button>
-          <span className="hidden sm:inline">AI scores are a starting point. Every call is yours.</span>
           <button
             type="button"
             className="flex items-center gap-1 hover:text-pass"

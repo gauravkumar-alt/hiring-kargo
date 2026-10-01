@@ -18,6 +18,12 @@ export interface EmailProps {
   sender: string;
 }
 
+/** Drop rubric jargon the model sometimes leads with ("Matches anchor 5 because …"). */
+export function plainRationale(s: string) {
+  const t = s.replace(/^\s*(this\s+)?(matches|fits|meets)\s+(the\s+)?anchor\s*\d(\s*\([^)]*\))?\s*(because|as|since|by|:|,|-|—)?\s*/i, "").trim();
+  return t ? t[0].toUpperCase() + t.slice(1) : s;
+}
+
 function Dots({ score, muted }: { score: number; muted?: boolean }) {
   return (
     <span className="flex gap-1" aria-label={`${score} of 5`}>
@@ -82,7 +88,7 @@ export function Scores({ c }: { c: Candidate }) {
                   {x.evidence}
                 </blockquote>
               )}
-              {x.rationale && <p className="mt-2 text-xs leading-relaxed text-muted">{x.rationale}</p>}
+              {x.rationale && <p className="mt-2 text-xs leading-relaxed text-muted">{plainRationale(x.rationale)}</p>}
             </li>
           );
         })}
@@ -319,14 +325,14 @@ export function Email({ c, decision, onPatch, onDraft, onSend, emailReady, email
         <p className="fade-item flex items-start gap-2 rounded-xl bg-accent-soft px-3 py-2 text-xs text-accent">
           <Icon name="mail" className="mt-px h-3.5 w-3.5 shrink-0" />
           <span>
-            <b>Test mode:</b> this goes to your inbox ({emailTestInbox}), not to {to.trim() || "the candidate"}. The subject says who it was meant for.
+            <b>Test mode:</b> sends to your inbox ({emailTestInbox}), not to the candidate.
           </span>
         </p>
       )}
 
       {draft && (
         <div className="fade-item flex flex-wrap items-center justify-end gap-2">
-          {!emailReady && <span className="mr-auto text-xs text-muted">The server says email isn&apos;t connected. Sending will show what&apos;s missing.</span>}
+          {!emailReady && <span className="mr-auto text-xs text-muted">Email isn&apos;t connected right now.</span>}
           {confirming ? (
             <>
               <span className="mr-auto text-sm text-ink-2">

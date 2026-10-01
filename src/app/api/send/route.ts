@@ -29,7 +29,7 @@ export async function POST(req: Request) {
   // Resend's shared test sender works without verifying a domain. Set FROM_EMAIL once a domain is verified.
   const from = process.env.FROM_EMAIL?.trim() || DEFAULT_FROM;
   if (!key) {
-    return NextResponse.json({ error: "Email isn't set up yet: RESEND_API_KEY is missing on the server." }, { status: 500 });
+    return NextResponse.json({ error: "Email isn't connected right now." }, { status: 500 });
   }
   const parsed = body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Check the recipient email, subject and body." }, { status: 400 });

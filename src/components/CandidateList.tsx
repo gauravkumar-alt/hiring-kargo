@@ -275,7 +275,7 @@ export function CandidateList({ items, role, roleCounts, onRole, activeId, onOpe
       )}
 
       <p className="hidden px-4 pt-3 text-[11px] text-muted md:block">
-        D Domain · O Ownership · B Built it · A Acts fast · C Craft · I Impact · X Complexity · T Trajectory. Darker bars are stronger scores; grey means not evidenced.
+        D Domain · O Ownership · B Built it · A Acts fast · C Craft · I Impact · X Complexity · T Trajectory
       </p>
     </section>
   );
