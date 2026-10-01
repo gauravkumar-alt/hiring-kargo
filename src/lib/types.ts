@@ -77,7 +77,8 @@ export interface Candidate {
   extract?: ExtractResult;
   result?: ScoreResult;
   brief?: Brief;
-  email?: EmailDraft;
+  email?: EmailDraft; // most recently drafted email (kept for older records)
+  drafts?: Partial<Record<EmailKind, EmailDraft>>; // invite and rejection kept separately
   override?: Exclude<Decision, "FLAG">; // founder's final call
   note?: string; // founder's reason for the call
   reviewedAt?: number; // when the founder made a call in triage

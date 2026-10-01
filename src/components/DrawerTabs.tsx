@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CRITERION_NAME, DECISION_LABEL, ROLE_LABEL, WEIGHTS, type Decision, type Role } from "@/lib/rubric";
+import { draftFor, emailKindFor, withDraft } from "@/lib/email";
 import { templateEmail } from "@/lib/templates";
 import type { Candidate, EmailKind } from "@/lib/types";
 import { Icon } from "./ui";
@@ -196,21 +197,23 @@ export function Brief({ c }: { c: Candidate }) {
 }
 
 export function Email({ c, decision, onPatch, onDraft, onSend, emailReady, emailTestInbox, sender }: EmailProps) {
-  const suggested: EmailKind = decision === "PASS" ? "rejection" : "invite";
-  const [kind, setKind] = useState<EmailKind>(c.email?.kind ?? suggested);
+  // The tab follows the call: Advance opens on the invite, everything else on the rejection.
+  const [kind, setKind] = useState<EmailKind>(emailKindFor(decision));
+  useEffect(() => setKind(emailKindFor(decision)), [decision]);
   const [to, setTo] = useState(c.extract?.contact.email ?? "");
   const [busy, setBusy] = useState<"draft" | "send" | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState("");
-  const draft = c.email?.kind === kind ? c.email : undefined;
-  const mismatch = (kind === "invite" && decision === "PASS") || (kind === "rejection" && decision === "ADVANCE");
+  const draft = draftFor(c, kind);
+  const mismatch = kind !== emailKindFor(decision);
+  const autoTried = useRef(new Set<EmailKind>());
 
   useEffect(() => setConfirming(false), [kind]);
 
   const generate = async () => {
     setError("");
     if (c.sample) {
-      onPatch({ email: templateEmail(c, kind, sender) });
+      onPatch(withDraft(c, templateEmail(c, kind, sender)));
       return;
     }
     setBusy("draft");
@@ -222,6 +225,13 @@ export function Email({ c, decision, onPatch, onDraft, onSend, emailReady, email
       setBusy(null);
     }
   };
+
+  useEffect(() => {
+    if (draft || busy || autoTried.current.has(kind) || !c.result) return;
+    autoTried.current.add(kind);
+    generate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kind, draft]);
 
   const send = async () => {
     if (!draft) return;
@@ -237,7 +247,7 @@ export function Email({ c, decision, onPatch, onDraft, onSend, emailReady, email
     }
   };
 
-  const edit = (p: { subject?: string; body?: string }) => draft && onPatch({ email: { ...draft, ...p } });
+  const edit = (p: { subject?: string; body?: string }) => draft && onPatch(withDraft(c, { ...draft, ...p }));
 
   return (
     <div className="space-y-4">
@@ -270,14 +280,15 @@ export function Email({ c, decision, onPatch, onDraft, onSend, emailReady, email
 
       {mismatch && (
         <p className="fade-item rounded-xl bg-hold-soft px-3 py-2 text-xs text-hold">
-          Heads up: the current call is <b>{DECISION_LABEL[decision]}</b>, but this is a{kind === "invite" ? "n invite" : " rejection"}.
+          Heads up: the current call is <b>{DECISION_LABEL[decision]}</b>, but this is a{kind === "invite" ? "n invite" : " rejection"}. The{" "}
+          {emailKindFor(decision) === "invite" ? "invite" : "rejection"} tab matches your call.
         </p>
       )}
 
       {!draft ? (
         <div className="fade-item rounded-2xl border border-dashed border-line p-8 text-center">
           <p className="mb-3 text-sm text-muted">
-            {decision === "HOLD" || decision === "FLAG" ? "This one's on hold, so nothing was drafted automatically. Make your call first." : "No draft yet."}
+            {busy === "draft" ? `Writing the ${kind === "invite" ? "interview invite" : "rejection"} for ${c.extract?.contact.name.split(" ")[0] ?? "this candidate"}…` : "No draft yet."}
           </p>
           <button type="button" className="btn btn-accent" onClick={generate} disabled={!!busy}>
             <Icon name="sparkle" /> {busy === "draft" ? "Drafting…" : `Draft ${kind === "invite" ? "invite" : "rejection"}`}

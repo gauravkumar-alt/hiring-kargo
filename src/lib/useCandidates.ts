@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Role } from "./rubric";
+import { emailKindFor, withDraft } from "./email";
 import type { Brief, Candidate, EmailDraft, EmailKind, ExtractResult, ScoreResult } from "./types";
 
 const KEY = "kargo-hiring:v1";
@@ -167,7 +168,7 @@ export function useCandidates() {
         patch(id, { result, override: undefined });
 
         patch(id, { stage: "draft" });
-        const kind: EmailKind | null = result.decision === "ADVANCE" ? "invite" : result.decision === "PASS" ? "rejection" : null;
+        const kind: EmailKind = emailKindFor(result.decision);
         const { brief, email } = await post<{ brief?: Brief; email?: EmailDraft }>("/api/draft", {
           cv: extract.redactedText,
           role,
@@ -175,7 +176,7 @@ export function useCandidates() {
           want: { brief: true, email: kind },
           firstName: extract.contact.name.split(" ")[0] ?? "",
         });
-        patch(id, { brief, email, stage: "done" });
+        patch(id, { brief, ...(email ? withDraft({}, email) : {}), stage: "done" });
         files.current.delete(id);
       } catch (e) {
         const message = e instanceof Error ? e.message : "Something went wrong";
@@ -236,7 +237,7 @@ export function useCandidates() {
         want: { brief: false, email: kind },
         firstName: c.extract.contact.name.split(" ")[0] ?? "",
       });
-      if (email) patch(id, { email });
+      if (email) patch(id, withDraft(latest.current.find((x) => x.id === id) ?? {}, email));
       return email;
     },
     [patch]

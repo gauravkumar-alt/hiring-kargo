@@ -1,5 +1,6 @@
 import { bandFor, CRITERIA, ROLE_SPECIFIC, type CriterionKey, type Role } from "./rubric";
 import { applyRules, totalFor } from "./rules";
+import { emailKindFor, withDraft } from "./email";
 import { templateBrief, templateEmail } from "./templates";
 import type { Candidate, CriterionScore, RoleScore, Signals } from "./types";
 
@@ -226,8 +227,7 @@ function build(def: Def, i: number): Candidate {
     result: { scores, signals, decision, reasons },
   };
   c.brief = templateBrief(c);
-  if (decision === "ADVANCE") c.email = templateEmail(c, "invite");
-  if (decision === "PASS") c.email = templateEmail(c, "rejection");
+  Object.assign(c, withDraft(c, templateEmail(c, emailKindFor(decision))));
   return c;
 }
 
