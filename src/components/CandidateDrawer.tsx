@@ -54,6 +54,33 @@ function isTyping(e: KeyboardEvent) {
 
 /* ---------------------------------------------------------------- Evidence tab */
 
+// Placeholders the redaction step leaves in the CV text, e.g. "[candidate]" or "[address: Mumbai area]".
+const REDACTED = /\[(candidate|email|phone|link|address[^\]]*)\]/g;
+const REDACTED_LABEL: Record<string, string> = { candidate: "name hidden", email: "email hidden", phone: "phone hidden", link: "link hidden" };
+
+function withRedactionTags(text: string, keyBase: string): React.ReactNode[] {
+  const out: React.ReactNode[] = [];
+  let last = 0;
+  for (const m of text.matchAll(REDACTED)) {
+    if (m.index! > last) out.push(text.slice(last, m.index));
+    const kind = m[1];
+    const label = REDACTED_LABEL[kind] ?? (kind.includes(":") ? `address hidden (${kind.split(":")[1].trim()})` : "address hidden");
+    out.push(
+      <span
+        key={`${keyBase}-${m.index}`}
+        title="Removed before the AI read this CV"
+        className="mx-0.5 inline-flex items-center gap-1 rounded-md bg-line-2 px-1.5 py-px align-[1px] text-[11px] font-semibold text-muted"
+      >
+        <Icon name="lock" className="h-3 w-3" />
+        {label}
+      </span>
+    );
+    last = m.index! + m[0].length;
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return out;
+}
+
 function Evidence({ c }: { c: Candidate }) {
   const e = c.extract!;
   const crit = c.result!.scores[c.role].criteria;
@@ -64,7 +91,7 @@ function Evidence({ c }: { c: Candidate }) {
 
   useGSAP(
     () => {
-      gsap.from(".ev-chip", { opacity: 0, y: 8, duration: 0.4, stagger: 0.03 });
+      gsap.fromTo(".ev-chip", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.03, clearProps: "opacity,transform" });
       gsap.to(".ev-mark", { backgroundSize: "100% 100%", duration: 0.55, stagger: 0.14, ease: "power2.inOut", delay: 0.25 });
       gsap.from(".ev-tag", { scale: 0, duration: 0.4, stagger: 0.14, ease: "back.out(3)", delay: 0.45 });
     },
@@ -83,7 +110,7 @@ function Evidence({ c }: { c: Candidate }) {
   const parts: React.ReactNode[] = [];
   let at = 0;
   marks.forEach((m, i) => {
-    if (m.start > at) parts.push(e.redactedText.slice(at, m.start));
+    if (m.start > at) parts.push(...withRedactionTags(e.redactedText.slice(at, m.start), `t${i}`));
     parts.push(
       <mark
         key={i}
@@ -98,7 +125,7 @@ function Evidence({ c }: { c: Candidate }) {
     );
     at = m.end;
   });
-  parts.push(e.redactedText.slice(at));
+  parts.push(...withRedactionTags(e.redactedText.slice(at), "tend"));
 
   const located = new Set(marks.flatMap((m) => m.keys));
 
@@ -117,7 +144,7 @@ function Evidence({ c }: { c: Candidate }) {
               onMouseEnter={() => found && setActive(k)}
               onMouseLeave={() => setActive(null)}
               title={found ? `Jump to the ${CRITERION_NAME[k]} quote` : x.notEvidenced ? "Not evidenced in the CV" : "Quote not located in the text"}
-              className={`ev-chip inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
+              className={`ev-chip inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition-colors ${
                 found
                   ? active === k
                     ? "bg-accent text-white"

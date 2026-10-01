@@ -77,9 +77,10 @@ export function ScoreRing({ value, decision, size = 48, stroke = 5, delay = 0 }:
   );
 }
 
-type IconName = "upload" | "file" | "x" | "check" | "send" | "sparkle" | "download" | "arrow" | "alert" | "quote" | "refresh" | "eye" | "mail" | "trash";
+type IconName = "lock" | "upload" | "file" | "x" | "check" | "send" | "sparkle" | "download" | "arrow" | "alert" | "quote" | "refresh" | "eye" | "mail" | "trash";
 
 const PATHS: Record<IconName, string> = {
+  lock: "M7 11V8a5 5 0 0 1 10 0v3M6 11h12v9H6z",
   upload: "M12 16V4m0 0-4 4m4-4 4 4M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2",
   file: "M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Zm0 0v5h5",
   x: "M6 6l12 12M18 6 6 18",
