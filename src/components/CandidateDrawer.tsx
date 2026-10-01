@@ -12,10 +12,10 @@ import { DECISION_HEX, DECISION_STYLE, DecisionPill, Icon, ScoreRing } from "./u
 type Tab = "evidence" | "scores" | "brief" | "email";
 type Call = Exclude<Decision, "FLAG">;
 
-const TABS: { id: Tab; label: string; key: string }[] = [
+const TABS: { id: Tab; label: string; short?: string; key: string }[] = [
   { id: "evidence", label: "Evidence", key: "1" },
   { id: "scores", label: "Scores", key: "2" },
-  { id: "brief", label: "Interview brief", key: "3" },
+  { id: "brief", label: "Interview brief", short: "Brief", key: "3" },
   { id: "email", label: "Email", key: "4" },
 ];
 
@@ -337,8 +337,8 @@ export function CandidateDrawer(props: Props) {
                 <ScoreRing value={r.scores[c.role].total} decision={decision} size={68} stroke={6} />
               </div>
               <div className="hd-item min-w-0 flex-1">
-                <h2 className="truncate text-xl font-bold tracking-tight">{c.extract?.contact.name}</h2>
-                <p className="truncate text-sm text-muted">
+                <h2 className="line-clamp-2 text-xl font-bold leading-tight tracking-tight sm:truncate">{c.extract?.contact.name}</h2>
+                <p className="line-clamp-2 text-sm text-muted sm:truncate">
                   {ROLE_LABEL[c.role]} ·{" "}
                   {c.cvPath ? (
                     <a href={`/api/candidates/${encodeURIComponent(c.id)}/cv`} target="_blank" rel="noreferrer" className="font-medium text-accent underline-offset-2 hover:underline">
@@ -357,7 +357,7 @@ export function CandidateDrawer(props: Props) {
                 <button type="button" onClick={() => go(-1)} aria-label="Previous candidate" className="rounded-full p-2 text-muted transition-colors hover:bg-paper hover:text-ink disabled:opacity-30" disabled={!hasPrev}>
                   <Icon name="arrow" className="h-4 w-4 rotate-180" />
                 </button>
-                <span className="num min-w-[3.2rem] text-center text-xs font-semibold text-muted">{index >= 0 ? `${index + 1} / ${total}` : `– / ${total}`}</span>
+                <span className="num hidden min-w-[3.2rem] text-center text-xs font-semibold text-muted sm:inline-block">{index >= 0 ? `${index + 1} / ${total}` : `– / ${total}`}</span>
                 <button type="button" onClick={() => go(1)} aria-label="Next candidate" className="rounded-full p-2 text-muted transition-colors hover:bg-paper hover:text-ink">
                   <Icon name="arrow" className="h-4 w-4" />
                 </button>
@@ -414,11 +414,19 @@ export function CandidateDrawer(props: Props) {
                   role="tab"
                   aria-selected={tab === t.id}
                   onClick={() => setTab(t.id)}
-                  className={`relative flex items-center gap-1.5 whitespace-nowrap px-3 py-2.5 text-sm font-semibold transition-colors ${tab === t.id ? "text-ink" : "text-muted hover:text-ink-2"}`}
+                  className={`relative flex items-center gap-1.5 whitespace-nowrap px-2.5 py-2.5 text-sm font-semibold transition-colors sm:px-3 ${tab === t.id ? "text-ink" : "text-muted hover:text-ink-2"}`}
                 >
-                  {t.label}
-                  <span className="text-[10px] font-bold text-muted/70">{t.key}</span>
-                  {tab === t.id && <span className="absolute inset-x-3 -bottom-px h-0.5 rounded-full bg-accent" />}
+                  {/* Phones: shorter labels and no key hints, so all four tabs fit without sideways scrolling. */}
+                  {t.short ? (
+                    <>
+                      <span className="sm:hidden">{t.short}</span>
+                      <span className="hidden sm:inline">{t.label}</span>
+                    </>
+                  ) : (
+                    t.label
+                  )}
+                  <span className="hidden text-[10px] font-bold text-muted/70 sm:inline">{t.key}</span>
+                  {tab === t.id && <span className="absolute inset-x-2.5 -bottom-px h-0.5 rounded-full bg-accent sm:inset-x-3" />}
                 </button>
               ))}
             </nav>

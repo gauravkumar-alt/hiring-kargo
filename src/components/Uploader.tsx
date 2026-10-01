@@ -13,9 +13,11 @@ interface Staged {
 
 const ACCEPT = ".pdf,.docx,.txt";
 
+// Letters-only boundaries, because CV files are usually named like "Rahul_SPM_CV.pdf" and "_" counts as a word
+// character for \b. Checked SPM-first so "spm" isn't read as "pm".
 function guessRole(name: string, fallback: Role): Role {
-  if (/\bspm\b|senior[\s_-]*p(roduct)?m/i.test(name)) return "SPM";
-  if (/\bpm\b/i.test(name)) return "PM";
+  if (/(^|[^a-z])spm([^a-z]|$)|senior[\s_.-]*p(roduct)?[\s_.-]*m/i.test(name)) return "SPM";
+  if (/(^|[^a-z])pm([^a-z]|$)|product[\s_.-]*manager/i.test(name)) return "PM";
   return fallback;
 }
 
