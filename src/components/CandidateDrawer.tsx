@@ -43,6 +43,7 @@ interface Props {
   onSend: (to: string, subject: string, body: string, kind: EmailKind) => Promise<void>;
   onRemove: () => void;
   emailReady: boolean;
+  emailTestInbox?: string | null;
   sender: string;
 }
 

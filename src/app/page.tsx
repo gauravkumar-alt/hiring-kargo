@@ -17,6 +17,7 @@ interface Status {
   ai: boolean;
   email: boolean;
   db: boolean;
+  emailTestInbox?: string | null;
   sender: string;
 }
 
@@ -113,11 +114,21 @@ export default function Home() {
   const heroBig = useRef<HTMLDivElement>(null);
   const heroReady = useRef(false);
 
+  // Re-checked whenever the tab regains focus, so a tab left open across a deploy doesn't keep stale settings.
   useEffect(() => {
-    fetch("/api/status")
-      .then((r) => r.json())
-      .then(setStatus)
-      .catch(() => setStatus({ ai: false, email: false, db: false, sender: "Arjun" }));
+    const load = () =>
+      fetch("/api/status", { cache: "no-store" })
+        .then((r) => r.json())
+        .then(setStatus)
+        .catch(() => setStatus((s) => s ?? { ai: false, email: false, db: false, sender: "Arjun" }));
+    load();
+    const onFocus = () => document.visibilityState === "visible" && load();
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onFocus);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onFocus);
+    };
   }, []);
 
   const notify = useCallback((t: Omit<ToastData, "id">) => setToast({ ...t, id: Date.now() + Math.random() }), []);
@@ -438,6 +449,7 @@ export default function Home() {
           onSend={(to, subject, body, kind) => store.send(open.id, to, subject, body, kind)}
           onRemove={() => store.remove(open.id)}
           emailReady={status?.email ?? false}
+          emailTestInbox={status?.emailTestInbox ?? null}
           sender={status?.sender ?? "Arjun"}
         />
       )}

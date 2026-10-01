@@ -13,6 +13,7 @@ export interface EmailProps {
   onDraft: (kind: EmailKind) => Promise<unknown>;
   onSend: (to: string, subject: string, body: string, kind: EmailKind) => Promise<void>;
   emailReady: boolean;
+  emailTestInbox?: string | null; // masked address when every email is redirected to the founder
   sender: string;
 }
 
@@ -194,7 +195,7 @@ export function Brief({ c }: { c: Candidate }) {
   );
 }
 
-export function Email({ c, decision, onPatch, onDraft, onSend, emailReady, sender }: EmailProps) {
+export function Email({ c, decision, onPatch, onDraft, onSend, emailReady, emailTestInbox, sender }: EmailProps) {
   const suggested: EmailKind = decision === "PASS" ? "rejection" : "invite";
   const [kind, setKind] = useState<EmailKind>(c.email?.kind ?? suggested);
   const [to, setTo] = useState(c.extract?.contact.email ?? "");
@@ -303,13 +304,30 @@ export function Email({ c, decision, onPatch, onDraft, onSend, emailReady, sende
 
       {error && <p className="rounded-xl bg-pass-soft px-3 py-2 text-sm text-pass">{error}</p>}
 
+      {draft && emailTestInbox && (
+        <p className="fade-item flex items-start gap-2 rounded-xl bg-accent-soft px-3 py-2 text-xs text-accent">
+          <Icon name="mail" className="mt-px h-3.5 w-3.5 shrink-0" />
+          <span>
+            <b>Test mode:</b> this goes to your inbox ({emailTestInbox}), not to {to.trim() || "the candidate"}. The subject says who it was meant for.
+          </span>
+        </p>
+      )}
+
       {draft && (
         <div className="fade-item flex flex-wrap items-center justify-end gap-2">
-          {!emailReady && <span className="mr-auto text-xs text-muted">Add RESEND_API_KEY and FROM_EMAIL to send.</span>}
+          {!emailReady && <span className="mr-auto text-xs text-muted">The server says email isn&apos;t connected. Sending will show what&apos;s missing.</span>}
           {confirming ? (
             <>
               <span className="mr-auto text-sm text-ink-2">
-                Send to <b>{to}</b>? This can't be unsent.
+                {emailTestInbox ? (
+                  <>
+                    Send a test copy to <b>your inbox</b>?
+                  </>
+                ) : (
+                  <>
+                    Send to <b>{to}</b>? This can&apos;t be unsent.
+                  </>
+                )}
               </span>
               <button type="button" className="btn btn-ghost" onClick={() => setConfirming(false)}>
                 Cancel
@@ -322,11 +340,15 @@ export function Email({ c, decision, onPatch, onDraft, onSend, emailReady, sende
             <button
               type="button"
               className="btn btn-primary"
-              onClick={() => setConfirming(true)}
-              disabled={!emailReady || !/^\S+@\S+\.\S+$/.test(to.trim()) || c.sample}
-              title={c.sample ? "Sample candidates can't be emailed" : ""}
+              onClick={() => {
+                // Stays clickable so a problem explains itself instead of a silently greyed-out button.
+                setError("");
+                if (c.sample && !emailTestInbox) return setError("Sample candidates can only be emailed in test mode.");
+                if (!emailTestInbox && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to.trim())) return setError("Enter a valid email address in the To field.");
+                setConfirming(true);
+              }}
             >
-              <Icon name="send" /> {c.sentAt ? "Send again" : "Send via Resend"}
+              <Icon name="send" /> {c.sentAt ? "Send again" : emailTestInbox ? "Send test to me" : "Send via Resend"}
             </button>
           )}
         </div>
