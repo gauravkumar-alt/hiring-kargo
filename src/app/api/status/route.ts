@@ -14,7 +14,7 @@ function maskEmail(e: string) {
 export async function GET() {
   return NextResponse.json({
     ai: Boolean(process.env.GEMINI_API_KEY),
-    email: Boolean(process.env.RESEND_API_KEY && process.env.FROM_EMAIL),
+    email: Boolean(process.env.RESEND_API_KEY), // FROM_EMAIL falls back to Resend's test sender
     db: supabaseConfigured(),
     emailTestInbox: maskEmail(process.env.EMAIL_TEST_REDIRECT?.trim() || ""),
     sender: process.env.SENDER_NAME || "Arjun",

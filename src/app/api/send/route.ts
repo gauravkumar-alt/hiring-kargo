@@ -7,6 +7,8 @@ export const runtime = "nodejs";
 
 // While EMAIL_TEST_REDIRECT is set, every email goes to that inbox instead of the candidate.
 // Resend's test sender can only deliver to the account owner anyway, so this keeps sending usable for demos.
+const DEFAULT_FROM = "Kargo Hiring <onboarding@resend.dev>";
+
 const TEST_INBOX = () => process.env.EMAIL_TEST_REDIRECT?.trim() || "";
 
 const body = z.object({
@@ -24,9 +26,10 @@ function escapeHtml(s: string) {
 /** Only ever called when the founder clicks Send and confirms. Nothing is sent automatically. */
 export async function POST(req: Request) {
   const key = process.env.RESEND_API_KEY;
-  const from = process.env.FROM_EMAIL;
-  if (!key || !from) {
-    return NextResponse.json({ error: "Email isn't set up yet. Add RESEND_API_KEY and FROM_EMAIL to .env.local." }, { status: 500 });
+  // Resend's shared test sender works without verifying a domain. Set FROM_EMAIL once a domain is verified.
+  const from = process.env.FROM_EMAIL?.trim() || DEFAULT_FROM;
+  if (!key) {
+    return NextResponse.json({ error: "Email isn't set up yet: RESEND_API_KEY is missing on the server." }, { status: 500 });
   }
   const parsed = body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Check the recipient email, subject and body." }, { status: 400 });
